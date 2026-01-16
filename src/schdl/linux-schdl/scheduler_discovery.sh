@@ -33,3 +33,14 @@ ls
 
 # Se visualiza el contenido del archivo fair.c
 cat fair.c
+
+## Pregunta de reflexión (obligatoria)
+
+Responder dentro del script como comentario:
+
+> ¿Por qué Linux no implementa directamente FCFS, SJF o RR como se ven en los libros?
+# porque esos ejemplos son más teóricos y funcionan mejor para explicar conceptos.
+# En la vida real, el sistema operativo tiene que manejar muchos procesos al mismo
+# tiempo y no todos se comportan igual.
+# Por eso Linux usa un planificador más avanzado, que se adapta mejor a diferentes
+# situaciones y reparte el tiempo del CPU de una forma más justa.
