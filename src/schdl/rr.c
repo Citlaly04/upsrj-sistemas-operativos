@@ -9,46 +9,64 @@ void rr_schedule(Process p[], int n, int quantum)
     int time = 0;
     int completed = 0;
 
+    int queue[100];
+    int front = 0, rear = 0;
+
+    int in_queue[n];
+    for (int i = 0; i < n; i++)
+        in_queue[i] = 0;
+
+    for (int i = 0; i < n; i++) {
+        if (p[i].arrival_time == 0) {
+            queue[rear++] = i;
+            in_queue[i] = 1;
+        }
+    }
+
     while (completed < n) {
-        int executed = 0;
 
-        for (int i = 0; i < n; i++) {
-            if (p[i].arrival_time <= time &&
-                p[i].remaining_time > 0) {
-
-                executed = 1;
-                printf("Tiempo %d: Ejecutando P%d\n",
-                       time, p[i].id);
-
-                if (p[i].remaining_time > quantum) {
-                    time += quantum;
-                    p[i].remaining_time -= quantum;
-                } else {
-                    time += p[i].remaining_time;
-                    p[i].remaining_time = 0;
-
-                    p[i].turnaround_time =
-                        time - p[i].arrival_time;
-                    p[i].waiting_time =
-                        p[i].turnaround_time -
-                        p[i].burst_time;
-
-                    p[i].completed = 1;
-                    completed++;
-
-                    printf("   -> P%d terminó en tiempo %d\n",
-                           p[i].id, time);
+        if (front == rear) {
+            time++;
+            for (int i = 0; i < n; i++) {
+                if (!p[i].completed &&
+                    p[i].arrival_time <= time &&
+                    !in_queue[i]) {
+                    queue[rear++] = i;
+                    in_queue[i] = 1;
                 }
+            }
+            continue;
+        }
+
+        int i = queue[front++];
+
+        int exec_time = (p[i].remaining_time > quantum)
+                        ? quantum
+                        : p[i].remaining_time;
+
+        p[i].remaining_time -= exec_time;
+        time += exec_time;
+
+        for (int j = 0; j < n; j++) {
+            if (!p[j].completed &&
+                p[j].arrival_time <= time &&
+                !in_queue[j]) {
+                queue[rear++] = j;
+                in_queue[j] = 1;
             }
         }
 
-        /* Si nadie se ejecuto, el CPU queda ocioso */
-        if (!executed) {
-            time++;
+        if (p[i].remaining_time == 0) {
+            p[i].completed = 1;
+            completed++;
+            p[i].turnaround_time = time - p[i].arrival_time;
+            p[i].waiting_time =
+                p[i].turnaround_time - p[i].burst_time;
+        } else {
+            queue[rear++] = i;
         }
     }
 }
-
 
 /* ============================================================
  * DO NOT MODIFY MAIN

@@ -6,45 +6,62 @@
  * ============================================================ */
 void sjf_schedule(Process p[], int n)
 {
-    int time = 0;
+    int current_time = 0;
     int completed = 0;
 
-    while (completed < n) {
+    Process ordered[n];  
+
+    while (completed < n)
+    {
         int idx = -1;
         int min_burst = 999999;
 
-        /* Buscar el proceso disponible con menor ráfaga */
-        for (int i = 0; i < n; i++) {
-            if (p[i].arrival_time <= time &&
-                !p[i].completed &&
-                p[i].burst_time < min_burst) {
-
-                min_burst = p[i].burst_time;
-                idx = i;
+      
+        for (int i = 0; i < n; i++)
+        {
+            if (!p[i].completed && p[i].arrival_time <= current_time)
+            {
+                if (p[i].burst_time < min_burst)
+                {
+                    min_burst = p[i].burst_time;
+                    idx = i;
+                }
+                else if (p[i].burst_time == min_burst)
+                {
+                    if (p[i].arrival_time < p[idx].arrival_time ||
+                       (p[i].arrival_time == p[idx].arrival_time &&
+                        p[i].id < p[idx].id))
+                    {
+                        idx = i;
+                    }
+                }
             }
         }
 
-        /* CPU ocioso */
-        if (idx == -1) {
-            time++;
+      
+        if (idx == -1)
+        {
+            current_time++;
             continue;
         }
 
-        printf("Tiempo %d: Ejecutando P%d (BT=%d)\n",
-               time, p[idx].id, p[idx].burst_time);
-
-        p[idx].waiting_time = time - p[idx].arrival_time;
-        time += p[idx].burst_time;
+       
+        p[idx].waiting_time = current_time - p[idx].arrival_time;
         p[idx].turnaround_time =
             p[idx].waiting_time + p[idx].burst_time;
-        p[idx].completed = 1;
-        completed++;
 
-        printf("   -> P%d terminó en tiempo %d\n",
-               p[idx].id, time);
+        current_time += p[idx].burst_time;
+        p[idx].completed = 1;
+
+        ordered[completed] = p[idx];
+        completed++;
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        p[i] = ordered[i];
     }
 }
-
 
 /* ============================================================
  * DO NOT MODIFY MAIN
